@@ -1,0 +1,143 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+local AUDIO_ID = "84142247103485"
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SixtySevenHell"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+----------------------------------------------------------------
+-- [NEW] WARNING UI SECTION
+----------------------------------------------------------------
+local warningFrame = Instance.new("Frame")
+warningFrame.Size = UDim2.new(0, 400, 0, 200)
+warningFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
+warningFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+warningFrame.BorderSizePixel = 2
+warningFrame.BorderColor3 = Color3.new(1, 0, 0)
+warningFrame.Parent = screenGui
+
+local warningText = Instance.new("TextLabel")
+warningText.Size = UDim2.new(1, -20, 0.6, 0)
+warningText.Position = UDim2.new(0, 10, 0, 10)
+warningText.BackgroundTransparency = 1
+warningText.Text = "WARNING: The audio will be EXTREMELY loud. Are you sure you want to continue?"
+warningText.TextColor3 = Color3.new(1, 1, 1)
+warningText.TextWrapped = true
+warningText.TextScaled = true
+warningText.Font = Enum.Font.GothamBold
+warningText.Parent = warningFrame
+
+local okButton = Instance.new("TextButton")
+okButton.Size = UDim2.new(0.8, 0, 0.25, 0)
+okButton.Position = UDim2.new(0.1, 0, 0.7, 0)
+okButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+okButton.Text = "OK, I UNDERSTAND"
+okButton.TextColor3 = Color3.new(1, 1, 1)
+okButton.Font = Enum.Font.GothamBold
+okButton.TextScaled = true
+okButton.Parent = warningFrame
+
+----------------------------------------------------------------
+-- HELL UI SECTION
+----------------------------------------------------------------
+-- BIG TEXT
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(1, 0, 0.8, 0)
+textLabel.Position = UDim2.new(0, 0, 0.1, 0)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "YOU GOT FROZEN FOREVER BITCH\nBEC YOU DIED OR JUMPED💀⚰️\nAYYY 6-7 FUNK HELL\n(LOOPING FOREVER)"
+textLabel.TextColor3 = Color3.new(1, 0, 0)
+textLabel.TextScaled = true
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextStrokeTransparency = 0
+textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+textLabel.Visible = false
+textLabel.Parent = screenGui
+
+-- SMALL BOTTOM TEXT
+local smallText = Instance.new("TextLabel")
+smallText.Size = UDim2.new(1, 0, 0.15, 0)
+smallText.Position = UDim2.new(0, 0, 0.85, 0)
+smallText.BackgroundTransparency = 1
+smallText.Text = "THOSE WHO KNOW 🌚💀 | NO ESCAPE"
+smallText.TextColor3 = Color3.new(0, 1, 0)
+smallText.TextScaled = true
+smallText.Font = Enum.Font.Gotham
+smallText.Visible = false
+smallText.Parent = screenGui
+
+-- SOUND (VOLUME 67)
+local sound = Instance.new("Sound")
+sound.SoundId = "rbxassetid://" .. AUDIO_ID
+sound.Volume = 67
+sound.Looped = true
+sound.Parent = screenGui
+
+-- PULSING EFFECT
+local pulseTween = TweenService:Create(textLabel, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut, -1, true), {TextSize = 120})
+
+local isHellActive = false
+local canTrigger = false
+local heartbeatConn
+
+local function startHell()
+	if isHellActive or not canTrigger then return end
+	isHellActive = true
+	
+	rootPart.Anchored = true
+	humanoid.PlatformStand = true
+	humanoid.JumpPower = 0
+	
+	textLabel.Visible = true
+	smallText.Visible = true -- Making bottom text visible
+	pulseTween:Play()
+	sound:Play()
+	
+	heartbeatConn = RunService.Heartbeat:Connect(function()
+		if character and character.Parent then
+			local hrp = character:FindFirstChild("HumanoidRootPart")
+			if hrp then hrp.Anchored = true; hrp.Velocity = Vector3.zero end
+			if character:FindFirstChild("Humanoid") then character.Humanoid.PlatformStand = true end
+		end
+	end)
+end
+
+-- BUTTON CLICK
+okButton.MouseButton1Click:Connect(function()
+	warningFrame:Destroy() -- Removes the warning UI
+	canTrigger = true
+end)
+
+-- TRIGGERS
+UserInputService.JumpRequest:Connect(function()
+	startHell()
+end)
+
+local function setupDeath()
+	humanoid.Died:Connect(function()
+		startHell()
+	end)
+end
+
+player.CharacterAdded:Connect(function(newChar)
+	character = newChar
+	humanoid = newChar:WaitForChild("Humanoid")
+	rootPart = newChar:WaitForChild("HumanoidRootPart")
+	if isHellActive then
+		rootPart.Anchored = true
+		humanoid.PlatformStand = true
+	end
+	setupDeath()
+end)
+
+setupDeath()
